@@ -1,7 +1,8 @@
 from email import message
 import pygame
 
-from dino_runner.utils.constants import RESET, DINO_DEAD, GAME_OVER, BG, ICON , SCREEN_HEIGHT, SCREEN_WIDTH, TITLE, FPS, FONT_STYLE
+from dino_runner.components.cloud import Cloud
+from dino_runner.utils.constants import COLOURS, RESET, DINO_DEAD, GAME_OVER, BG, ICON , SCREEN_HEIGHT, SCREEN_WIDTH, TITLE, FPS, FONT_STYLE
 from dino_runner.components.dinosaur import Dinosaur
 from dino_runner.components.obstacles.obstacle_manager import ObstacleManager
 
@@ -21,7 +22,9 @@ class Game:
         self.obstacle_manager = ObstacleManager()
         self.running = False
         self.score = 0
+        self.hi_score = 0
         self.death_count = 0
+        self.cloud = Cloud()
 
     def execute(self):
         self.running = True
@@ -52,6 +55,7 @@ class Game:
         user_input = pygame.key.get_pressed()
         self.player.update(user_input)
         self.obstacle_manager.update(self)
+        self.cloud.update(self.game_speed)
 
     def draw(self):
         self.clock.tick(FPS)
@@ -59,6 +63,7 @@ class Game:
         self.draw_background()
         self.draw_score()
         self.player.draw(self.screen)
+        self.cloud.draw(self.screen)
         self.obstacle_manager.draw(self.screen)
         pygame.display.update()
         pygame.display.flip()
@@ -81,8 +86,12 @@ class Game:
 
     def update_score(self):
         self.score += 1
-        if self.score % 100 == 0:
+
+        if self.score % 100 == 0 and self.game_speed < 900:
             self.game_speed += 5
+
+        if self.score > self.hi_score:
+            self.hi_score = self.score
 
     def handle_events_on_menu(self):
         for event in pygame.event.get():
@@ -100,7 +109,7 @@ class Game:
         self.screen.blit(text, text_rect)
 
     def show_menu(self):
-        self.screen.fill((255, 255, 255))
+        self.screen.fill(COLOURS['purple'])
         half_screen_height = SCREEN_HEIGHT // 2
         half_screen_width = SCREEN_WIDTH // 2
         if self.death_count == 0:
